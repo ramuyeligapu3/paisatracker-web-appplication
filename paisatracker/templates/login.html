@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+{% block title %}
+   Log In
+{% endblock %}
+{% block main %}
+     <body>
+
+          {% if message1 %}
+        <div class="alert alert-success" role="alert">
+          {{message1}}
+        </div>
+        {% endif %}
+          
+        {% if message %}
+
+          <!-- <h3>{{ message }}</h3> -->
+          <div class="alert alert-danger " role="alert">
+            {{message}}
+          </div>
+        {% else %}
+           <h3>Hey, Login here</h3>
+        {% endif %}
+        <div class="form-container">
+            <form action="/login" method="post" class="p-3 m-0 border-0  custom-form-width" >
+                <!-- Example Code -->
+
+                <div class="form-floating row mb-3">
+                <input type="email" class=" col-4 form-control" id="floatingInput" name="email" placeholder="name@example.com" fdprocessedid="r5rprk">
+                <label for="floatingInput">Email address</label>
+                </div>
+
+                <div class="row form-floating mb-3">
+                <input type="password" class="form-control" id="floatingPassword" name="password" placeholder="Password" fdprocessedid="m4y69">
+                <label for="floatingPassword">Password</label>
+                </div>
+                <div class="row d-grid gap-2 col-6 mx-auto mb-3">
+                <button class="btn btn-primary" type="submit">Log In</button>
+                <p>Forgot Password? <a  href="/mail_sent">Reset    </a>Haven't Registered? <a  href="/register">Registere</a></p>
+                <!-- <p>Haven't Registered? <a  href="/register">Registere</a></p> -->
+                </div>
+            </form>
+        </div>
+    </body>
+{% endblock %}
