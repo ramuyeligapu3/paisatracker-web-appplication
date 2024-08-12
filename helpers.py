@@ -2,7 +2,8 @@ import smtplib
 import random
 import string
 from email.mime.text import MIMEText
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, flash, render_template, redirect, request, session
+from flask_session import Session
 from functools import wraps
 
 app=Flask(__name__)
