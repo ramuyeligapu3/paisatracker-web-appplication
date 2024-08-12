@@ -33,7 +33,9 @@ def after_request(response):
     response.headers["Pragma"] = "no-cache"
     return response
 
+
 @app.route("/report")
+@login_required
 def report():
     """Generate and display reports based on user-selected criteria"""
     report_type = request.args.get('type')
@@ -58,19 +60,24 @@ def report():
 
     return render_template("report.html", data=query, income=income[0]['SUM(amount)'], expenses=expense[0]["SUM(amount)"])
 
+
 @app.route("/expense")
+@login_required
 def expense():
     """Display the latest expenses"""
     expenses_table = db.execute("SELECT * FROM expenses WHERE category=(?)  AND user_id=? ORDER BY expense_id DESC LIMIT 100", "expense", session["user_id"])
     return render_template("expense.html", expenses_table=expenses_table)
 
+
 @app.route("/income")
+@login_required
 def income():
     """Display the latest incomes"""
     expenses_table = db.execute("SELECT * FROM expenses WHERE category=(?)  AND user_id=? ORDER BY expense_id DESC LIMIT 100", "income", session["user_id"])
     return render_template("income.html", expenses_table=expenses_table)
 
 @app.route("/home", methods=["GET", "POST"])
+@login_required
 def home():
     """Handle new expense/income entry and display recent entries"""
     if request.method == "POST":
@@ -85,7 +92,6 @@ def home():
             return render_template("home.html", user_name=session["user_name"])
 
         if session["user_id"] and amount and category and description and date:
-            print("success4")
             db.execute("INSERT INTO expenses (user_id, amount, category, description, date) VALUES (?,?,?,?,?)", session["user_id"], amount, category, description, date)
 
     # Fetch the latest 5 expense entries
@@ -96,6 +102,7 @@ def home():
 def index():
     """Render the index page"""
     return render_template("index.html")
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -155,6 +162,7 @@ def register():
     else:
         return render_template("register.html")
 
+
 @app.route("/mail_sent", methods=["GET", "POST"])
 def mail_sent():
     """Handle OTP sending for password reset"""
@@ -195,6 +203,7 @@ def forgot():
             return render_template("login.html", message1=message)
 
     return render_template("forgot.html")
+
 
 @app.route("/logout")
 def logout():
