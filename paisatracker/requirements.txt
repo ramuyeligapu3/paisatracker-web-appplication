@@ -1,6 +1,0 @@
-
-Flask
-Flask-Session
-pytz
-requests
-smtplib
