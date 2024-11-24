@@ -7,7 +7,9 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import login_required, send_otp, generate_otp
 
 # Initialize the database
-db = SQL("sqlite:///expenses.db")
+# db = SQL("sqlite:///expenses.db")
+db = SQL("postgresql://postgres:UdyTcPbTWFObZbISNzexqIdGApqLtauN@junction.proxy.rlwy.net:25810/railway")
+
 
 # Initialize the Flask app
 app = Flask(__name__)
@@ -34,6 +36,33 @@ def after_request(response):
     return response
 
 
+# @app.route("/report")
+# @login_required
+# def report():
+#     """Generate and display reports based on user-selected criteria"""
+#     report_type = request.args.get('type')
+
+#     # Query database for different report types
+#     if report_type == 'last_7_days':
+#         query = db.execute("SELECT * FROM expenses WHERE date >= date('now','-7 days') AND user_id=?", session["user_id"])
+#         income = db.execute("SELECT SUM(amount) FROM expenses WHERE date >= date('now','-7 days') AND category='income'AND user_id=?", session["user_id"])
+#         expense = db.execute("SELECT SUM(amount) FROM expenses WHERE date >= date('now','-7 days') AND category='expense'AND user_id=?", session["user_id"])
+#     elif report_type == 'this_month':
+#         query = db.execute("SELECT * FROM expenses WHERE strftime('%Y-%m', date) = strftime('%Y-%m', 'now') AND user_id=?", session["user_id"])
+#         income = db.execute("SELECT SUM(amount) FROM expenses WHERE strftime('%Y-%m', date) = strftime('%Y-%m', 'now') AND category='income' AND user_id=?", session["user_id"])
+#         expense = db.execute("SELECT SUM(amount) FROM expenses WHERE strftime('%Y-%m', date) = strftime('%Y-%m', 'now') AND category='expense' AND user_id=?", session["user_id"])
+#     elif report_type == 'last_month':
+#         query = db.execute("SELECT * FROM expenses WHERE strftime('%Y-%m', date) = strftime('%Y-%m', 'now', '-1 month') AND user_id=?", session["user_id"])
+#         income = db.execute("SELECT SUM(amount) FROM expenses WHERE strftime('%Y-%m', date) = strftime('%Y-%m', 'now', '-1 month') AND category='income' AND user_id=?", session["user_id"])
+#         expense = db.execute("SELECT SUM(amount) FROM expenses WHERE strftime('%Y-%m', date) = strftime('%Y-%m', 'now', '-1 month') AND category='expense' AND user_id=?", session["user_id"])
+
+#     # Print income for debugging purposes
+#     inc = income[0]
+#     print(inc['SUM(amount)'])
+
+#     return render_template("report.html", data=query, income=income[0]['SUM(amount)'], expenses=expense[0]["SUM(amount)"])
+
+
 @app.route("/report")
 @login_required
 def report():
@@ -42,23 +71,25 @@ def report():
 
     # Query database for different report types
     if report_type == 'last_7_days':
-        query = db.execute("SELECT * FROM expenses WHERE date >= date('now','-7 days') AND user_id=?", session["user_id"])
-        income = db.execute("SELECT SUM(amount) FROM expenses WHERE date >= date('now','-7 days') AND category='income'AND user_id=?", session["user_id"])
-        expense = db.execute("SELECT SUM(amount) FROM expenses WHERE date >= date('now','-7 days') AND category='expense'AND user_id=?", session["user_id"])
+        query = db.execute("SELECT * FROM expenses WHERE date >= CURRENT_DATE - INTERVAL '7 days' AND user_id=%s", [session["user_id"]])
+        income = db.execute("SELECT SUM(amount) FROM expenses WHERE date >= CURRENT_DATE - INTERVAL '7 days' AND category='income' AND user_id=%s", [session["user_id"]])
+        expense = db.execute("SELECT SUM(amount) FROM expenses WHERE date >= CURRENT_DATE - INTERVAL '7 days' AND category='expense' AND user_id=%s", [session["user_id"]])
     elif report_type == 'this_month':
-        query = db.execute("SELECT * FROM expenses WHERE strftime('%Y-%m', date) = strftime('%Y-%m', 'now') AND user_id=?", session["user_id"])
-        income = db.execute("SELECT SUM(amount) FROM expenses WHERE strftime('%Y-%m', date) = strftime('%Y-%m', 'now') AND category='income' AND user_id=?", session["user_id"])
-        expense = db.execute("SELECT SUM(amount) FROM expenses WHERE strftime('%Y-%m', date) = strftime('%Y-%m', 'now') AND category='expense' AND user_id=?", session["user_id"])
+        query = db.execute("SELECT * FROM expenses WHERE date_trunc('month', date) = date_trunc('month', CURRENT_DATE) AND user_id=%s", [session["user_id"]])
+        income = db.execute("SELECT SUM(amount) FROM expenses WHERE date_trunc('month', date) = date_trunc('month', CURRENT_DATE) AND category='income' AND user_id=%s", [session["user_id"]])
+        expense = db.execute("SELECT SUM(amount) FROM expenses WHERE date_trunc('month', date) = date_trunc('month', CURRENT_DATE) AND category='expense' AND user_id=%s", [session["user_id"]])
     elif report_type == 'last_month':
-        query = db.execute("SELECT * FROM expenses WHERE strftime('%Y-%m', date) = strftime('%Y-%m', 'now', '-1 month') AND user_id=?", session["user_id"])
-        income = db.execute("SELECT SUM(amount) FROM expenses WHERE strftime('%Y-%m', date) = strftime('%Y-%m', 'now', '-1 month') AND category='income' AND user_id=?", session["user_id"])
-        expense = db.execute("SELECT SUM(amount) FROM expenses WHERE strftime('%Y-%m', date) = strftime('%Y-%m', 'now', '-1 month') AND category='expense' AND user_id=?", session["user_id"])
+        query = db.execute("SELECT * FROM expenses WHERE date_trunc('month', date) = date_trunc('month', CURRENT_DATE - INTERVAL '1 month') AND user_id=%s", [session["user_id"]])
+        income = db.execute("SELECT SUM(amount) FROM expenses WHERE date_trunc('month', date) = date_trunc('month', CURRENT_DATE - INTERVAL '1 month') AND category='income' AND user_id=%s", [session["user_id"]])
+        expense = db.execute("SELECT SUM(amount) FROM expenses WHERE date_trunc('month', date) = date_trunc('month', CURRENT_DATE - INTERVAL '1 month') AND category='expense' AND user_id=%s", [session["user_id"]])
 
     # Print income for debugging purposes
     inc = income[0]
-    print(inc['SUM(amount)'])
+    print(inc['sum'])
 
-    return render_template("report.html", data=query, income=income[0]['SUM(amount)'], expenses=expense[0]["SUM(amount)"])
+    return render_template("report.html", data=query, income=income[0]['sum'], expenses=expense[0]["sum"])
+
+
 
 
 @app.route("/expense")
