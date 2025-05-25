@@ -8,7 +8,7 @@ from helpers import login_required, send_otp, generate_otp
 
 # Initialize the database
 # db = SQL("sqlite:///expenses.db")
-db = SQL("postgresql://postgres:UdyTcPbTWFObZbISNzexqIdGApqLtauN@junction.proxy.rlwy.net:25810/railway")
+db = SQL("postgresql://paisa_tracker_db_user:enY7Xskkrn4MJV7z1Dut0e0hVMLimTzJ@dpg-d0paj3umcj7s73du7dh0-a.oregon-postgres.render.com/paisa_tracker_db")
 
 
 # Initialize the Flask app
